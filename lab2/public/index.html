@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title>Лабораторная работа №2</title>
+  </head>
+  <body>
+  <div class="container">
+		<h1>Лабораторная работа №2</h1>
+		<div class="form-group">
+			<label for="server">Server</label>
+			<input type="text" class="form-control" id="server" placeholder="ip:port" value="127.0.0.1:3030">
+		</div>
+		<button type="button" class="btn btn-info" id="ping">Ping</button>
+		<button type="button" class="btn btn-primary" id="getInputData" disabled>GetInputData</button>
+		<button type="button" class="btn btn-success" id="WriteAnswer" disabled>WriteAnswer</button>
+		<p id="resultText"></p>
+  </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	<script src='decimal.min.js'></script>
+	<script>
+	let result;
+	
+	ping.onclick = function(){
+		(async() => {
+			const response = await fetch(`http://127.0.0.1:3000/ping?server=${$('#server')[0].value}`);
+			const data = await response;
+			if(data.status === 200)
+			{
+				$('#getInputData').prop('disabled', false);
+				$('#server').prop('readonly', true);
+			}
+			else alert("Сервер недоступен!");
+		})();
+
+	};
+	getInputData.onclick = function(){
+		(async() => {
+			const response = await fetch(`http://127.0.0.1:3000/getInputData?server=${$('#server')[0].value}`);
+			const data = await response.json();
+			
+			$('#getInputData').prop('disabled', true);
+			$('#ping').prop('disabled', true);
+			$('#WriteAnswer').prop('disabled', false);
+			
+			let obj = calculate(data);
+			result = JSON.stringify(obj);
+			resultText.innerText = `Ответ: ${result}`;
+		})();
+	};
+	WriteAnswer.onclick = function(){
+		(async() => {
+			const response = await fetch(`http://127.0.0.1:3000/WriteAnswer?server=${$('#server')[0].value}`, {
+					method: 'POST',
+					body: JSON.stringify({Output: result}),
+					headers:{
+						'Content-Type': 'application/json'
+					}
+				}
+			);
+			const data = await response;
+			if(data.status === 200)
+				alert("Ответ успешно отправлен!");
+		})();
+	};
+	function calculate(input) {
+	
+		let SumResult = new Decimal(0);
+		let MulResult = new Decimal(1);
+		let SortedInputs = [];
+
+		for(let elem of input.Sums){
+			SumResult = SumResult.plus(elem);
+			SortedInputs.push(elem);
+		}
+		SumResult = SumResult.times(input.K);
+
+		for(let elem of input.Muls){
+			MulResult = MulResult.times(elem);
+			SortedInputs.push(elem);
+		}
+		SortedInputs.sort((a, b) => a - b );
+		
+		let obj = 
+		{ 
+			'SumResult' : SumResult.toNumber(),
+			'MulResult' : MulResult.toNumber(),
+			'SortedInputs' : SortedInputs
+		};
+		
+		return obj;
+	}
+	</script>
+  </body>
+</html>

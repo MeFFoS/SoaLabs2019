@@ -1,0 +1,18 @@
+{
+  "name": "lab1riat",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test" : "mocha *.test.js"
+  },
+  "author": "MeFFoS",
+  "license": "ISC",
+  "dependencies": {
+    "decimal.js": "^10.2.0",
+    "xml2js": "^0.4.21"
+  },
+  "devDependencies": {
+    "mocha": "^6.2.2"
+  }
+}

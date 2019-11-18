@@ -1,0 +1,2 @@
+Json
+{"SumResult":30.3,"MulResult":4,"SortedInputs":[1,1.01,2.02,4]}
